@@ -298,10 +298,20 @@ def main_page():
             # Acciones de selección
             contador = ui.label('Seleccionados: 0').classes('text-primary')
 
+            def flag_true(value) -> bool:
+                if isinstance(value, bool):
+                    return value
+                if isinstance(value, (int, float)):
+                    return value != 0
+                if isinstance(value, str):
+                    return value.strip().lower() in {'true', '1', 'on', 'yes', 'si', 'sí'}
+                return False
+
             def set_seleccionado(fila: dict, checked: bool) -> None:
                 if fila is None:
                     return
-                fila['__checked'] = checked
+                checked_norm = flag_true(checked)
+                fila['__checked'] = checked_norm
                 rid = fila.get('__id')
                 try:
                     rid_int = int(rid)
@@ -309,7 +319,7 @@ def main_page():
                     rid_int = None
                 if rid_int is None:
                     return
-                if checked:
+                if checked_norm:
                     selected_ids.add(rid_int)
                 else:
                     selected_ids.discard(rid_int)
@@ -318,8 +328,19 @@ def main_page():
                 except NameError:
                     pass
 
+            def obtener_ids_tabla() -> list[int]:
+                ids: set[int] = set()
+                for r in filas:
+                    try:
+                        rid = int(r.get('__id'))
+                    except (TypeError, ValueError):
+                        continue
+                    if rid in selected_ids or flag_true(r.get('__checked')):
+                        ids.add(rid)
+                return sorted(ids)
+
             def actualizar_contador():
-                contador.text = f'Seleccionados: {len(selected_ids)}'
+                contador.text = f'Seleccionados: {len(obtener_ids_tabla())}'
                 contador.update()
 
             def seleccionar_todo_vista():
@@ -616,11 +637,7 @@ def main_page():
             def on_toggle_select_lite(e):
                 args = e.args if isinstance(e.args, dict) else {}
                 rid = args.get('id')
-                checked_val = args.get('checked', False)
-                if isinstance(checked_val, str):
-                    checked = checked_val.strip().lower() in {'true', '1', 'on', 'yes'}
-                else:
-                    checked = bool(checked_val)
+                checked = flag_true(args.get('checked', False))
                 if rid is None: return
                 rid = int(rid)
                 fila = by_id.get(rid)
@@ -638,23 +655,9 @@ def main_page():
                     if selected_ids_ag:
                         sel_ids = list(selected_ids_ag)
                     else:
-                        sel_ids = []
-                        for r in filas:
-                            try:
-                                rid = int(r.get('__id'))
-                            except (TypeError, ValueError):
-                                continue
-                            if rid in selected_ids:
-                                sel_ids.append(rid)
+                        sel_ids = obtener_ids_tabla()
                 except NameError:
-                    sel_ids = []
-                    for r in filas:
-                        try:
-                            rid = int(r.get('__id'))
-                        except (TypeError, ValueError):
-                            continue
-                        if rid in selected_ids:
-                            sel_ids.append(rid)
+                    sel_ids = obtener_ids_tabla()
                 if not sel_ids:
                     ui.notify('No hay filas seleccionadas', type='warning'); return
 
