@@ -572,6 +572,7 @@ def main_page():
                 <q-td :props="props">
                   <q-checkbox
                     dense
+                    :data-row-id="props.row.__id"
                     :model-value="props.row.__checked === true"
                     @update:model-value="val => {
                       const nv = !!val;
@@ -650,10 +651,18 @@ def main_page():
 
             async def sincronizar_seleccion_ui() -> None:
                 """Refresca la selección tomando el estado real del checkbox desde el navegador."""
+                script = (
+                    "const nodos = Array.from(this.$el.querySelectorAll('div[data-row-id]'));"
+                    "return nodos.map(node => {"
+                    "  const idAttr = node.getAttribute('data-row-id');"
+                    "  const id = Number(idAttr ?? '0');"
+                    "  const input = node.querySelector('input[type=checkbox]');"
+                    "  const checked = input ? input.checked : false;"
+                    "  return { id, checked };"
+                    "});"
+                )
                 try:
-                    datos = await tabla.run_javascript(
-                        'return (this.$props.rows || []).map(r => ({id: r.__id, checked: !!r.__checked}))'
-                    )
+                    datos = await tabla.run_javascript(script)
                 except Exception:
                     return
 
