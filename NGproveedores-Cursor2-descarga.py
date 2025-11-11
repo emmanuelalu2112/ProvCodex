@@ -648,8 +648,35 @@ def main_page():
             tabla.on('update-cell',  on_update_cell)
             tabla.on('toggle-select-lite', on_toggle_select_lite)
 
+            async def sincronizar_seleccion_ui() -> None:
+                """Refresca la selección tomando el estado real del checkbox desde el navegador."""
+                try:
+                    datos = await tabla.run_javascript(
+                        'return (this.$props.rows || []).map(r => ({id: r.__id, checked: !!r.__checked}))'
+                    )
+                except Exception:
+                    return
+
+                if not isinstance(datos, list):
+                    return
+
+                for item in datos:
+                    if not isinstance(item, dict):
+                        continue
+                    try:
+                        rid = int(item.get('id'))
+                    except (TypeError, ValueError):
+                        continue
+                    fila = by_id.get(rid)
+                    if not fila:
+                        continue
+                    set_seleccionado(fila, item.get('checked', False))
+
+                actualizar_contador()
+
             # Botón Grabar + resultados
             async def grabar_seleccionados():
+                await sincronizar_seleccion_ui()
                 # Priorizar selección de AG Grid si existe y no está vacía
                 try:
                     if selected_ids_ag:
