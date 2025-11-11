@@ -576,7 +576,7 @@ def main_page():
                     @update:model-value="val => {
                       const nv = !!val;
                       props.row.__checked = nv;
-                      $parent.$emit('toggle-select-lite', { id: props.row.__id, checked: nv })
+                      $emit('toggle-select-lite', { id: props.row.__id, checked: nv })
                     }"
                   />
                 </q-td>
@@ -591,7 +591,7 @@ def main_page():
                     @blur="e => {
                       const val = e.target.value || '';
                       props.row.__fecha_fila = val || '';
-                      $parent.$emit('update-cell', { id: props.row.__id, field: '__fecha_fila', value: val || '' })
+                      $emit('update-cell', { id: props.row.__id, field: '__fecha_fila', value: val || '' })
                     }"
                   />
                 </q-td>
@@ -607,12 +607,12 @@ def main_page():
                     @keyup.enter="e => {
                       const val = e.target.value || '';
                       props.row.__cant_fila = val;
-                      $parent.$emit('update-cell', { id: props.row.__id, field: '__cant_fila', value: val })
+                      $emit('update-cell', { id: props.row.__id, field: '__cant_fila', value: val })
                     }"
                     @blur="e => {
                       const val = e.target.value || '';
                       props.row.__cant_fila = val;
-                      $parent.$emit('update-cell', { id: props.row.__id, field: '__cant_fila', value: val })
+                      $emit('update-cell', { id: props.row.__id, field: '__cant_fila', value: val })
                     }"
                   />
                 </q-td>
