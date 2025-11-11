@@ -23,3 +23,13 @@ contenido completo y limpio del archivo usando cualquiera de estas opciones:
    - El archivo `NGproveedores-Cursor2.py` aparecerá tal cual en tu árbol de trabajo y podrás copiarlo directamente.
 
 Estas opciones te permiten obtener siempre la versión más reciente del archivo sin los caracteres añadidos por la vista de diferencias.
+
+## Archivo listo para descargar
+
+Dentro de este repositorio encontrarás también `NGproveedores-Cursor2-descarga.py`, que es una copia idéntica del código actual de `NGproveedores-Cursor2.py`. Puedes descargarlo directamente desde GitHub con el botón **Download raw file** o usando la línea de comandos:
+
+```bash
+curl -L -o NGproveedores-Cursor2-descarga.py "https://raw.githubusercontent.com/<tu-usuario>/<tu-repo>/<rama>/NGproveedores-Cursor2-descarga.py"
+```
+
+Sustituye `<tu-usuario>`, `<tu-repo>` y `<rama>` por los valores reales de tu repositorio (por ejemplo, `main` o `work`). Esto te dará un archivo limpio, listo para usar o compartir sin necesidad de copiarlo desde la vista de diferencias.
