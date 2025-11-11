@@ -297,26 +297,51 @@ def main_page():
 
             # Acciones de selección
             contador = ui.label('Seleccionados: 0').classes('text-primary')
+
+            def set_seleccionado(fila: dict, checked: bool) -> None:
+                if fila is None:
+                    return
+                fila['__checked'] = checked
+                rid = fila.get('__id')
+                try:
+                    rid_int = int(rid)
+                except (TypeError, ValueError):
+                    rid_int = None
+                if rid_int is None:
+                    return
+                if checked:
+                    selected_ids.add(rid_int)
+                else:
+                    selected_ids.discard(rid_int)
+                try:
+                    selected_ids_ag.clear()
+                except NameError:
+                    pass
+
             def actualizar_contador():
-                cuenta = sum(1 for r in filas if bool(r.get('__checked')))
-                contador.text = f'Seleccionados: {cuenta}'
+                contador.text = f'Seleccionados: {len(selected_ids)}'
                 contador.update()
 
             def seleccionar_todo_vista():
                 for r in vista_actual:
-                    r['__checked'] = True
+                    set_seleccionado(r, True)
                 tabla.update(); actualizar_contador()
 
             def seleccionar_tres_vista():
                 for r in vista_actual:
-                    r['__checked'] = False
+                    set_seleccionado(r, False)
                 for r in vista_actual[:3]:
-                    r['__checked'] = True
+                    set_seleccionado(r, True)
                 tabla.update(); actualizar_contador()
 
             def limpiar_todas():
                 for r in filas:
-                    r['__checked'] = False
+                    set_seleccionado(r, False)
+                selected_ids.clear()
+                try:
+                    selected_ids_ag.clear()
+                except NameError:
+                    pass
                 tabla.update(); actualizar_contador()
 
             with ui.row().classes('items-center gap-3'):
@@ -592,12 +617,16 @@ def main_page():
             def on_toggle_select_lite(e):
                 args = e.args if isinstance(e.args, dict) else {}
                 rid = args.get('id')
-                checked = bool(args.get('checked', False))
+                checked_val = args.get('checked', False)
+                if isinstance(checked_val, str):
+                    checked = checked_val.strip().lower() in {'true', '1', 'on', 'yes'}
+                else:
+                    checked = bool(checked_val)
                 if rid is None: return
                 rid = int(rid)
                 fila = by_id.get(rid)
                 if not fila: return
-                fila['__checked'] = checked
+                set_seleccionado(fila, checked)
                 actualizar_contador()
 
             tabla.on('update-cell',  on_update_cell)
@@ -607,9 +636,26 @@ def main_page():
             async def grabar_seleccionados():
                 # Priorizar selección de AG Grid si existe y no está vacía
                 try:
-                    sel_ids = list(selected_ids_ag) if selected_ids_ag else [int(r['__id']) for r in filas if bool(r.get('__checked'))]
+                    if selected_ids_ag:
+                        sel_ids = list(selected_ids_ag)
+                    else:
+                        sel_ids = []
+                        for r in filas:
+                            try:
+                                rid = int(r.get('__id'))
+                            except (TypeError, ValueError):
+                                continue
+                            if rid in selected_ids:
+                                sel_ids.append(rid)
                 except NameError:
-                    sel_ids = [int(r['__id']) for r in filas if bool(r.get('__checked'))]
+                    sel_ids = []
+                    for r in filas:
+                        try:
+                            rid = int(r.get('__id'))
+                        except (TypeError, ValueError):
+                            continue
+                        if rid in selected_ids:
+                            sel_ids.append(rid)
                 if not sel_ids:
                     ui.notify('No hay filas seleccionadas', type='warning'); return
 
