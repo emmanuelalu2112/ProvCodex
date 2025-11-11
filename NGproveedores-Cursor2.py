@@ -549,12 +549,11 @@ def main_page():
                 'body-cell-Seleccionar',
                 '''
                 <q-td :props="props">
-                  <q-icon
-                    :name="props.row.__checked ? 'check_box' : 'check_box_outline_blank'"
-                    size="md"
-                    class="cursor-pointer"
-                    @click="() => {
-                      const nv = !props.row.__checked;
+                  <q-checkbox
+                    dense
+                    :model-value="props.row.__checked === true"
+                    @update:model-value="val => {
+                      const nv = !!val;
                       props.row.__checked = nv;
                       $parent.$emit('toggle-select-lite', { id: props.row.__id, checked: nv })
                     }"
